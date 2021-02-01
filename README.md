@@ -9,7 +9,7 @@ Create a csv or xlsx format template file to tell the HyperSaver which parameter
 #### Notice: The `ID` is necesarry for the template because it is the only identification for a training log.
 ## Set up the HyperSaver class
 Here is the sample code:
-```
+```python
 from HyperSaver import HyperSaver
 hyperSaver = HyperSaver(
         init_template='./hyperSaverTemplate.xlsx', set_id_by_time=True, webhook_url='')
