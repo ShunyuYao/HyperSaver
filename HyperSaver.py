@@ -47,14 +47,15 @@ class HyperSaver(object):
         Get argumentparser like class to extract hyperparameters.
         opts: The argumentparser
         """
+        self.configs = opts
         for opt_name in self.opt_names:
             # opt_value = getattr(opts, opt_name, None)
             opt_split_names = opt_name.split('.')
             opt_value = get_attr_tree(
                 opts, opt_split_names, len(opt_split_names)-1)
             if opt_value is not None and opt_name in self.output_dict.keys():
-                if isinstance(opt_value, tuple) or isinstance(opt_value, list):
-                    opt_value = str(opt_value)
+                # if isinstance(opt_value, tuple) or isinstance(opt_value, list):
+                #     opt_value = str(opt_value)
                 self.output_dict[opt_name] = opt_value
 
     def set_time_str(self, time_str):
@@ -71,17 +72,18 @@ class HyperSaver(object):
         in the template file.
         """
         set_names = input_dict.keys()
+        self.configs.performance = {}
         for set_name in set_names:
             if set_name not in self.output_dict.keys():
                 if match_template:
                     continue
                 warnings.warn(
                     "The name {} is not included in the template will be added in.".format(set_name))
-
             opt_value = input_dict[set_name]
-            if isinstance(opt_value, tuple) or isinstance(opt_value, list) or isinstance(opt_value, dict):
-                opt_value = str(opt_value)
+            # if isinstance(opt_value, tuple) or isinstance(opt_value, list) or isinstance(opt_value, dict):
+            #     opt_value = str(opt_value)
             self.output_dict[set_name] = opt_value
+            self.configs.performance[set_name] = opt_value
 
     def save_config(self, save_path, append_if_exist=True):
         """
@@ -99,7 +101,7 @@ class HyperSaver(object):
         """
         Save config to local path.
         """
-        data = self.output_dict
+        data = vars(self.configs)
         with open(path, 'w') as f:
             json.dump(data, f, sort_keys=True, indent=4, separators=(', ', ': '))
 
@@ -162,19 +164,19 @@ if __name__ == '__main__':
     args = parser.parse_args()
     # Init
     hyperSaver = HyperSaver(
-        init_template='./hyperSaverTemplate.xlsx', set_id_by_time=True, webhook_url='')
+        init_template='./hyperSaverTemplate.xlsx', set_id_by_time=True, webhook_url='https://www.feishu.cn/flow/api/trigger-webhook/42c2c823ae4dda5213d04a46e27473a5')
     # Get hyperparameters from ArgumentParser
     hyperSaver.get_config_from_class(args)
     # Get model performance and add to HyperSaver
     model_perf = {
-        'loss': 0.1,
-        'accuracy': 98,
+        'loss': [0.1, 0.2],
+        'accuracy': {'s1': 98, 's2': 73},
     }
     hyperSaver.set_config(model_perf)
-    hyperSaver.send_webhook_message()
+    # hyperSaver.send_webhook_message()
     # Save to local
-    # print(hyperSaver._show_serialized_json())
-    # hyperSaver.save_config('./results.csv')
-    # hyperSaver.save_all_configs_to_json('./results.json')
+    print(hyperSaver._show_serialized_json())
+    hyperSaver.save_config('./results.csv')
+    hyperSaver.save_all_configs_to_json('./results.json')
     # Use FeiShu webhook
     # hyperSaver.send_webhook_message()
