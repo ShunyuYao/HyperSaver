@@ -40,6 +40,7 @@ class HyperSaver(object):
         # self.output_dict
         self.time_str = time.strftime('%Y%m%d%H%M')
         self.webhook_url = webhook_url
+        self.output_dict['ID'] = self.time_str
 
     def get_config_from_class(self, opts):
         """
@@ -93,6 +94,14 @@ class HyperSaver(object):
         else:
             df_save = pd.DataFrame(self.output_dict, index=[0])
             df_save.to_csv(save_path, index=False)
+    
+    def save_all_configs_to_json(self, path):
+        """
+        Save config to local path.
+        """
+        data = self.output_dict
+        with open(path, 'w') as f:
+            json.dump(data, f, sort_keys=True, indent=4, separators=(', ', ': '))
 
     def append_config(self, append_to_dest_csv):
         dest_csv = pd.read_csv(append_to_dest_csv)
@@ -122,9 +131,7 @@ class HyperSaver(object):
             ]
         }
         """
-        webhook_data = {
-            "events": [self.output_dict]
-        }
+        webhook_data = self.output_dict
         data = json.dumps(webhook_data)
         res = requests.post(url=self.webhook_url, data=data)
         return True
@@ -164,7 +171,10 @@ if __name__ == '__main__':
         'accuracy': 98,
     }
     hyperSaver.set_config(model_perf)
+    hyperSaver.send_webhook_message()
     # Save to local
-    hyperSaver.save_config('./results.csv')
+    # print(hyperSaver._show_serialized_json())
+    # hyperSaver.save_config('./results.csv')
+    # hyperSaver.save_all_configs_to_json('./results.json')
     # Use FeiShu webhook
     # hyperSaver.send_webhook_message()

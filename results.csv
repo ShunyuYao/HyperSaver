@@ -1,0 +1,2 @@
+ID,name,epoch,batch_size,loss,accuracy
+202102042107,debug_hyper,50,4,0.1,98
